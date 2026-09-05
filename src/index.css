@@ -1,12 +1,331 @@
-/* CarBid global styles (on top of Bootstrap) */
-body {
-  background-color: #f6f7f9;
+/* ============================================================
+   CarBid design system — dark theme
+   Semantic tokens + Bootstrap 5.3 dark variable overrides.
+   Contrast: text 17:1, secondary ~8:1, accent ~7:1 (>= 4.5:1 AA)
+   ============================================================ */
+
+:root {
+  /* semantic color tokens */
+  --bg:              #0b0e14;  /* page base (dim)          */
+  --surface:         #141926;  /* cards (elevated)         */
+  --surface-2:       #1c2333;  /* inputs, hover surfaces   */
+  --border:          #283150;
+  --border-soft:     #1d2536;
+  --text:            #e9edf5;  /* primary text             */
+  --text-2:          #a3adc2;  /* secondary text           */
+  --text-3:          #6d7894;  /* tertiary text            */
+  --accent:          #f5a623;  /* brand amber              */
+  --accent-strong:   #ffbd45;
+  --accent-contrast: #201503;  /* text on amber            */
+  --danger:          #ff6b6b;
+  --success:         #3ddc97;
+  --warning:         #fbbf24;
+  --info:            #6ea8fe;
+
+  /* type */
+  --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* subtle lift effect on listing cards */
-.card {
-  transition: transform 0.15s ease;
+/* ---------- bootstrap dark theme overrides ---------- */
+[data-bs-theme="dark"] {
+  --bs-body-bg:        var(--bg);
+  --bs-body-color:     var(--text);
+  --bs-secondary-color: var(--text-2);
+  --bs-tertiary-color: var(--text-3);
+  --bs-border-color:   var(--border);
+  --bs-emphasis-color: var(--text);
+
+  --bs-card-bg:            var(--surface);
+  --bs-card-border-color:  var(--border-soft);
+
+  --bs-primary:       var(--accent);
+  --bs-primary-rgb:   245, 166, 35;
+  --bs-link-color:    var(--accent-strong);
+  --bs-link-hover-color: #ffd27a;
+
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text);
+  --bs-table-striped-color: var(--text);
+  --bs-table-hover-color: var(--text);
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.03);
+  --bs-table-border-color: var(--border-soft);
+
+  --bs-navbar-color:    var(--text-2);
+  --bs-navbar-hover-color: var(--text);
+  --bs-navbar-active-color: var(--accent-strong);
+
+  --bs-nav-tabs-link-active-bg: var(--surface-2);
+  --bs-nav-tabs-link-active-color: var(--text);
+  --bs-nav-tabs-link-active-border-color: var(--border);
+
+  --bs-alert-bg-scale: -92%;
 }
-.card:hover {
-  transform: translateY(-3px);
+
+body {
+  font-family: var(--font-stack);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 480px at 15% -10%, rgba(245, 166, 35, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 95% -15%, rgba(110, 168, 254, 0.06), transparent 55%);
+  background-repeat: no-repeat;
+  color: var(--text);
+}
+
+::selection { background: rgba(245, 166, 35, 0.35); }
+
+h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
+
+/* visible focus for keyboard navigation (accessibility) */
+:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+
+/* ============================================================
+   Navbar
+   ============================================================ */
+.navbar-car {
+  background: rgba(11, 14, 20, 0.85) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-soft);
+}
+.navbar-car .navbar-brand { font-weight: 800; font-size: 1.35rem; }
+.navbar-car .nav-link { font-weight: 500; }
+.brand-accent {
+  background: linear-gradient(90deg, var(--accent), #ffd27a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ============================================================
+   Hero (home)
+   ============================================================ */
+.hero {
+  padding: 3.5rem 0 2.5rem;
+  margin-bottom: 2.5rem;
+  background:
+    radial-gradient(700px 320px at 50% -60px, rgba(245, 166, 35, 0.14), transparent 70%);
+  border-bottom: 1px solid var(--border-soft);
+}
+.hero-title {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.75rem;
+}
+.hero-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--accent), #ffd27a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-sub { color: var(--text-2); font-size: 1.05rem; max-width: 560px; }
+
+.stat-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+.stat-chip strong { color: var(--accent-strong); font-size: 1.05rem; }
+
+/* ============================================================
+   Listing cards
+   ============================================================ */
+.car-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.car-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(245, 166, 35, 0.45);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(245, 166, 35, 0.15);
+}
+.car-card .card-img-wrap { position: relative; }
+.car-card .card-img-top {
+  height: 195px;
+  object-fit: cover;
+  width: 100%;
+}
+.car-card .status-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+.car-card .countdown-overlay {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: center;
+}
+.car-card .card-body { padding: 1rem 1.1rem 1.2rem; }
+.car-card .card-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.price-line { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.price-amount {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--accent-strong);
+  letter-spacing: -0.02em;
+}
+.price-usd { color: var(--text-3); font-size: 0.8rem; }
+
+/* ============================================================
+   Countdown chips
+   ============================================================ */
+.countdown-chip {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(11, 14, 20, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  color: var(--text);
+  white-space: nowrap;
+}
+.countdown-chip.low  { color: var(--danger); border-color: rgba(255, 107, 107, 0.4); }
+.countdown-chip.mid  { color: var(--warning); border-color: rgba(251, 191, 36, 0.4); }
+.countdown-chip.high { color: var(--success); border-color: rgba(61, 220, 151, 0.4); }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn-primary {
+  --bs-btn-bg: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-color: var(--accent-contrast);
+  --bs-btn-hover-bg: var(--accent-strong);
+  --bs-btn-hover-border-color: var(--accent-strong);
+  --bs-btn-hover-color: var(--accent-contrast);
+  --bs-btn-active-bg: var(--accent-strong);
+  --bs-btn-active-border-color: var(--accent-strong);
+  --bs-btn-active-color: var(--accent-contrast);
+  --bs-btn-disabled-bg: #4a3c1e;
+  --bs-btn-disabled-color: #8a7a55;
+  font-weight: 700;
+}
+.btn-gradient {
+  background: linear-gradient(120deg, #f5a623, #ffcf6e);
+  border: none;
+  color: var(--accent-contrast);
+  font-weight: 700;
+}
+.btn-gradient:hover { background: linear-gradient(120deg, #ffb938, #ffd98a); color: var(--accent-contrast); }
+
+/* ============================================================
+   Forms
+   ============================================================ */
+.form-control, .form-select {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+.form-control:focus, .form-select:focus {
+  background-color: var(--surface-2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(245, 166, 35, 0.18);
+  color: var(--text);
+}
+.form-control::placeholder { color: var(--text-3); }
+
+/* ============================================================
+   Cards & sections
+   ============================================================ */
+.card { border-radius: 16px; border-color: var(--border-soft); }
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 800;
+  font-size: 1.35rem;
+  margin: 2.5rem 0 1.25rem;
+}
+.section-title::before {
+  content: "";
+  width: 6px;
+  height: 26px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--accent), #ffd27a);
+}
+
+/* ============================================================
+   Car detail page
+   ============================================================ */
+.detail-img-wrap { position: relative; }
+.detail-img {
+  height: 380px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+}
+.detail-img-wrap .status-badge { position: absolute; top: 16px; left: 16px; }
+.bid-panel { border: 1px solid var(--border-soft); border-radius: 16px; background: var(--surface); }
+.spec-grid { border: 1px solid var(--border-soft); border-radius: 16px; background: var(--surface); }
+.spec-item { padding: 0.9rem 1rem; }
+.spec-item + .spec-item { border-left: 1px solid var(--border-soft); }
+.spec-item .spec-label { color: var(--text-3); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.spec-item .spec-value { font-weight: 700; font-size: 1.02rem; }
+
+/* ============================================================
+   Auth pages
+   ============================================================ */
+.auth-card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  padding: 2rem;
+}
+.auth-card .card-title { font-weight: 800; font-size: 1.5rem; }
+
+/* ============================================================
+   Admin dashboard
+   ============================================================ */
+.stat-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.stat-tile {
+  flex: 1;
+  min-width: 150px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 0.9rem 1.1rem;
+}
+.stat-tile .stat-label { color: var(--text-3); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.stat-tile .stat-value { font-size: 1.5rem; font-weight: 800; }
+
+.nav-tabs .nav-link { color: var(--text-2); font-weight: 600; }
+.nav-tabs .nav-link.active { color: var(--accent-strong); border-bottom: 2px solid var(--accent); background: transparent; }
+
+/* ============================================================
+   Tables
+   ============================================================ */
+.table { border-radius: 0 0 16px 16px; overflow: hidden; }
+.table thead th {
+  color: var(--text-3);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
 }

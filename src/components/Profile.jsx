@@ -16,6 +16,7 @@ const Profile = ({ user }) => {
       setData(res.data);
       setError("");
     } catch (err) {
+      console.error(err);
       setError("Could not load your profile.");
     }
   };
@@ -36,11 +37,19 @@ const Profile = ({ user }) => {
   const { sellerCars, bidderCars } = data;
 
   return (
-    <Container>
-      <h1 className="mb-3">My Profile</h1>
-      <p className="text-muted">
+    <Container className="pb-5">
+      <h1 className="hero-title fs-2 mb-2">My Profile</h1>
+      <p className="text-secondary">
         Logged in as <strong>{user.username}</strong> · {user.email}
       </p>
+      <div className="d-flex gap-2 flex-wrap mb-4">
+        <span className="stat-chip">
+          <strong>{sellerCars.length}</strong> listings
+        </span>
+        <span className="stat-chip">
+          <strong>{bidderCars.length}</strong> auctions bid on
+        </span>
+      </div>
 
       <Row className="g-4">
         {/* SELLER VIEW: vehicles listed by the user */}
