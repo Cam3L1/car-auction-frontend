@@ -12,6 +12,13 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
+  // lifecycle: this page mounts when its route is visited and
+  // unmounts when the user navigates away (React Router)
+  useEffect(() => {
+    console.log("🟢 AdminDashboard page mounted");
+    return () => console.log("🔴 AdminDashboard page unmounted");
+  }, []);
+
   const fetchData = async () => {
     try {
       // platform monitoring: all auctions + the full bidding log

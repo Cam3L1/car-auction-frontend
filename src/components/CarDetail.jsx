@@ -22,6 +22,13 @@ const CarDetail = ({ user }) => {
   const [bidSuccess, setBidSuccess] = useState("");
   const [usdRate, setUsdRate] = useState(null);
 
+  // lifecycle: this page mounts when its route is visited and
+  // unmounts when the user navigates away (React Router)
+  useEffect(() => {
+    console.log("🟢 CarDetail page mounted");
+    return () => console.log("🔴 CarDetail page unmounted");
+  }, []);
+
   // third-party API: JOD -> USD exchange rate (open.er-api.com)
   useEffect(() => {
     axios

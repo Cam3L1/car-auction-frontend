@@ -12,6 +12,13 @@ const Home = () => {
   const [make, setMake] = useState("");
   const [usdRate, setUsdRate] = useState(null); // JOD -> USD (third-party API)
 
+  // lifecycle: this page mounts when its route is visited and
+  // unmounts when the user navigates away (React Router)
+  useEffect(() => {
+    console.log("🟢 Home page mounted");
+    return () => console.log("🔴 Home page unmounted");
+  }, []);
+
   // third-party API: open exchange rates (open.er-api.com, no key needed).
   // Fetched once so every card can show the USD equivalent of the price.
   useEffect(() => {
