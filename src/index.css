@@ -2,3 +2,11 @@
 body {
   background-color: #f6f7f9;
 }
+
+/* subtle lift effect on listing cards */
+.card {
+  transition: transform 0.15s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+}
