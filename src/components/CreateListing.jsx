@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Card, Form, Row, Col, Button, Alert } from "react-bootstrap";
-import axios from "axios";
 import api, { authHeaders } from "../api";
 
 const CreateListing = () => {
@@ -18,49 +17,18 @@ const CreateListing = () => {
     duration_hours: "48",
   });
   const [error, setError] = useState("");
-  const [models, setModels] = useState([]);     // model suggestions from NHTSA
-  const [modelsHint, setModelsHint] = useState("");
+
+  // lifecycle: this page mounts when its route is visited and
+  // unmounts when the user navigates away (React Router)
+  useEffect(() => {
+    console.log("🟢 CreateListing page mounted");
+    return () => console.log("🔴 CreateListing page unmounted");
+  }, []);
 
   // generic controlled-input handler
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
-  // third-party API: NHTSA vPIC (open, no key). While the seller types
-  // the make, we debounce a request that returns every model produced
-  // under that make and offer it through a datalist on the model field.
-  useEffect(() => {
-    const make = formData.make.trim();
-
-    if (make.length < 2) {
-      setModels([]);
-      setModelsHint("");
-      return;
-    }
-
-    // debounce: only query after the user pauses typing
-    const timer = setTimeout(async () => {
-      try {
-        const res = await axios.get(
-          `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMake/${encodeURIComponent(make)}?format=json`
-        );
-        const unique = [...new Set((res.data?.Results || []).map((r) => r.Model_Name).filter(Boolean))].sort();
-        setModels(unique);
-        setModelsHint(
-          unique.length > 0
-            ? `Fetched ${unique.length} models for "${make}" from the NHTSA vPIC open API`
-            : `No models found for "${make}" — type the model manually`
-        );
-      } catch (err) {
-        console.error(err);
-        setModels([]);
-        setModelsHint("");
-      }
-    }, 600);
-
-    // cleanup: cancel the pending request when the make changes again
-    return () => clearTimeout(timer);
-  }, [formData.make]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -145,21 +113,11 @@ const CreateListing = () => {
                   <Form.Label>Model</Form.Label>
                   <Form.Control
                     name="model"
-                    placeholder="Start typing the make to get suggestions"
+                    placeholder="e.g. Camry"
                     value={formData.model}
                     onChange={handleChange}
-                    list="model-suggestions"
                     required
                   />
-                  {/* model suggestions fetched from the NHTSA vPIC open API */}
-                  <datalist id="model-suggestions">
-                    {models.map((model) => (
-                      <option key={model} value={model} />
-                    ))}
-                  </datalist>
-                  {modelsHint && (
-                    <Form.Text className="text-secondary">{modelsHint}</Form.Text>
-                  )}
                 </Form.Group>
               </Col>
             </Row>
