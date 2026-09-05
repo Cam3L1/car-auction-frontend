@@ -69,7 +69,7 @@ const Login = ({ onLogin }) => {
             </Button>
           </Form>
           <p className="text-center mt-3 mb-0">
-            New to CarBid? <Link to="/register">Create an account</Link>
+            New to MazadJo? <Link to="/register">Create an account</Link>
           </p>
         </div>
     </Container>
