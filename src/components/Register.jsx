@@ -49,7 +49,7 @@ const Register = ({ onLogin }) => {
     <Container style={{ maxWidth: 440 }} className="py-5">
       <div className="auth-card">
         <div className="mb-3">
-          <h1 className="fw-bold mb-1">Join CarBid</h1>
+          <h1 className="fw-bold mb-1">Join MazadJo</h1>
           <p className="text-secondary mb-0">Create an account to bid and sell.</p>
         </div>
           {error && <Alert variant="danger">{error}</Alert>}

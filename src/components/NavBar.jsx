@@ -8,7 +8,7 @@ const NavBar = ({ user, onLogout }) => {
     <Navbar expand="lg" className="navbar-car sticky-top mb-4">
       <Container>
         <Navbar.Brand as={Link} to="/">
-          🚗 <span className="brand-accent">CarBid</span>
+          <span className="brand-accent">MazadJo</span>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-nav" />
         <Navbar.Collapse id="main-nav">
