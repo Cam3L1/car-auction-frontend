@@ -81,15 +81,33 @@ const AdminDashboard = () => {
   if (error) return <Container><Alert variant="danger">{error}</Alert></Container>;
 
   const activeCount = cars.filter((c) => c.status === "active").length;
+  const endedCount = cars.filter((c) => c.status === "ended").length;
+  const cancelledCount = cars.filter((c) => c.status === "cancelled").length;
 
   return (
-    <Container>
-      <h1 className="mb-1">Admin Dashboard</h1>
-      <p className="text-muted">
-        Platform monitoring · {activeCount} active / {cars.length - activeCount} closed auctions ·
-        {bids.length} bids logged
-      </p>
+    <Container className="pb-5">
+      <h1 className="hero-title fs-2 mb-2">Admin Dashboard</h1>
+      <p className="text-secondary">Platform monitoring and moderation</p>
       {notice && <Alert variant="success">{notice}</Alert>}
+
+      <div className="stat-row">
+        <div className="stat-tile">
+          <div className="stat-label">Active auctions</div>
+          <div className="stat-value" style={{ color: "var(--success)" }}>{activeCount}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-label">Ended</div>
+          <div className="stat-value">{endedCount}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-label">Cancelled</div>
+          <div className="stat-value" style={{ color: "var(--danger)" }}>{cancelledCount}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-label">Bids logged</div>
+          <div className="stat-value" style={{ color: "var(--accent-strong)" }}>{bids.length}</div>
+        </div>
+      </div>
 
       <Tabs defaultActiveKey="auctions" className="mb-3">
         {/* ALL AUCTIONS (active + closed) */}

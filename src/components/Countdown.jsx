@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Badge } from "react-bootstrap";
 
 // Live countdown timer: recalculates the remaining time against the
 // server-stored auction end timestamp every second.
@@ -26,14 +25,19 @@ const Countdown = ({ endTime, onExpire }) => {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  let variant = "success";
-  if (totalSeconds < 3600) variant = "danger";
-  else if (totalSeconds < 86400) variant = "warning";
+  // urgency level drives the chip colour (colour is never the only signal:
+  // the remaining time itself is always printed)
+  let level = "high";
+  if (totalSeconds < 3600) level = "low";
+  else if (totalSeconds < 86400) level = "mid";
+
+  const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    <Badge bg={variant} className="fs-6">
-      ⏳ {days}d {hours}h {minutes}m {seconds}s
-    </Badge>
+    <span className={`countdown-chip ${level}`}>
+      ⏳ {days > 0 ? `${days}d ` : ""}
+      {pad(hours)}:{pad(minutes)}:{pad(seconds)}
+    </span>
   );
 };
 

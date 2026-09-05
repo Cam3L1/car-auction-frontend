@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Container, Card, Form, Button, Alert } from "react-bootstrap";
+import { Container, Form, Button, Alert } from "react-bootstrap";
 import api from "../api";
 
 const Login = ({ onLogin }) => {
@@ -29,10 +29,12 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <Container style={{ maxWidth: 420 }}>
-      <Card className="shadow-sm">
-        <Card.Body>
-          <Card.Title className="mb-3">Login</Card.Title>
+    <Container style={{ maxWidth: 440 }} className="py-5">
+      <div className="auth-card">
+        <div className="mb-3">
+          <h1 className="fw-bold mb-1">Welcome back</h1>
+          <p className="text-secondary mb-0">Log in to bid on your next car.</p>
+        </div>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
@@ -55,15 +57,14 @@ const Login = ({ onLogin }) => {
                 required
               />
             </Form.Group>
-            <Button type="submit" variant="primary" className="w-100">
+            <Button type="submit" variant="primary" className="w-100 btn-gradient">
               Login
             </Button>
           </Form>
           <p className="text-center mt-3 mb-0">
             New to CarBid? <Link to="/register">Create an account</Link>
           </p>
-        </Card.Body>
-      </Card>
+        </div>
     </Container>
   );
 };
