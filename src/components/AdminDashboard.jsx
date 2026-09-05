@@ -23,6 +23,7 @@ const AdminDashboard = () => {
       setBids(bidsRes.data);
       setError("");
     } catch (err) {
+      console.error(err);
       setError("Could not load the admin dashboard.");
     } finally {
       setLoading(false);
