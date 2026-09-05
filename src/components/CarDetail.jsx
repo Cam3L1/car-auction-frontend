@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  Container, Row, Col, Card, ListGroup, Table, Form, Button,
+  Container, Row, Col, Card, Table, Form, Button,
   Alert, Badge, Spinner,
 } from "react-bootstrap";
+import axios from "axios";
 import api, { authHeaders } from "../api";
 import Countdown from "./Countdown";
 
 const MIN_BID_INCREMENT = 100;
 
-// status badge colours
+// status badge colours (always paired with the status text itself)
 const statusVariant = { active: "success", ended: "secondary", cancelled: "danger" };
 
 const CarDetail = ({ user }) => {
@@ -19,6 +20,15 @@ const CarDetail = ({ user }) => {
   const [amount, setAmount] = useState("");
   const [bidError, setBidError] = useState("");
   const [bidSuccess, setBidSuccess] = useState("");
+  const [usdRate, setUsdRate] = useState(null);
+
+  // third-party API: JOD -> USD exchange rate (open.er-api.com)
+  useEffect(() => {
+    axios
+      .get("https://open.er-api.com/v6/latest/JOD")
+      .then((res) => setUsdRate(res.data?.rates?.USD || null))
+      .catch(() => setUsdRate(null));
+  }, []);
 
   const fetchCar = async () => {
     try {
@@ -78,115 +88,129 @@ const CarDetail = ({ user }) => {
   };
 
   return (
-    <Container>
+    <Container className="pb-5">
       <Row className="g-4">
         {/* left column: image + description */}
         <Col lg={7}>
-          <Card className="shadow-sm">
-            <Card.Img
-              variant="top"
+          <div className="detail-img-wrap mb-3">
+            <img
               src={car.image_url}
               alt={car.title}
-              style={{ height: "340px", objectFit: "cover" }}
+              className="detail-img"
+              onError={(e) => (e.target.src = "/images/placeholder-car.svg")}
             />
-            <Card.Body>
-              <Card.Title className="fs-3">{car.title}</Card.Title>
-              <Badge bg={statusVariant[car.status]} className="mb-2">
-                {car.status.toUpperCase()}
+            <Badge bg={statusVariant[car.status]} className="status-badge fs-6">
+              {car.status.toUpperCase()}
+            </Badge>
+            {car.status === "ended" && winner && (
+              <Badge bg="primary" className="position-absolute fs-6" style={{ top: 16, left: 110 }}>
+                🏆 Winner: {winner}
               </Badge>
-              {car.status === "ended" && winner && (
-                <Badge bg="primary" className="ms-2 mb-2">
-                  🏆 Winner: {winner}
-                </Badge>
-              )}
-              <p className="mt-3">{car.description}</p>
+            )}
+          </div>
+          <Card className="mb-3">
+            <Card.Body>
+              <Card.Title className="fs-3 fw-bold">{car.title}</Card.Title>
+              <p className="mt-3 mb-0">{car.description}</p>
             </Card.Body>
           </Card>
+
+          {/* vehicle specifications */}
+          <div className="spec-grid">
+            <Row>
+              <Col xs={6} md={3} className="spec-item">
+                <div className="spec-label">Make</div>
+                <div className="spec-value">{car.make}</div>
+              </Col>
+              <Col xs={6} md={3} className="spec-item">
+                <div className="spec-label">Model</div>
+                <div className="spec-value">{car.model}</div>
+              </Col>
+              <Col xs={6} md={3} className="spec-item">
+                <div className="spec-label">Year</div>
+                <div className="spec-value">{car.year}</div>
+              </Col>
+              <Col xs={6} md={3} className="spec-item">
+                <div className="spec-label">Mileage</div>
+                <div className="spec-value">{car.mileage.toLocaleString()} km</div>
+              </Col>
+            </Row>
+          </div>
         </Col>
 
         {/* right column: auction panel */}
         <Col lg={5}>
-          <Card className="shadow-sm mb-4">
-            <ListGroup variant="flush">
-              <ListGroup.Item>
-                <strong>Current price:</strong>{" "}
-                <span className="fs-4">{car.current_price.toLocaleString()} JOD</span>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <strong>Starting price:</strong> {car.starting_price.toLocaleString()} JOD
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <strong>Seller:</strong> {car.seller}
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <strong>Time left:</strong>{" "}
-                {car.status === "active" ? (
-                  <Countdown endTime={car.end_time} onExpire={fetchCar} />
-                ) : (
-                  <Badge bg="secondary">Auction {car.status}</Badge>
-                )}
-              </ListGroup.Item>
-            </ListGroup>
-          </Card>
-
-          {/* bid form */}
-          <Card className="shadow-sm">
-            <Card.Body>
-              <Card.Title>Place a Bid</Card.Title>
-              {car.status !== "active" ? (
-                <Alert variant="warning" className="mb-0">
-                  This auction has {car.status}. Bidding is closed.
-                </Alert>
-              ) : isOwner ? (
-                <Alert variant="info" className="mb-0">
-                  You cannot bid on your own listing.
-                </Alert>
-              ) : !user ? (
-                <Alert variant="info" className="mb-0">
-                  <Link to="/login">Log in</Link> to place a bid.
-                </Alert>
-              ) : (
-                <Form onSubmit={handleBid}>
-                  <Form.Group className="mb-2">
-                    <Form.Label>Your bid (minimum {minBid.toLocaleString()} JOD)</Form.Label>
-                    <Form.Control
-                      type="number"
-                      placeholder={`e.g. ${minBid.toLocaleString()}`}
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
-                  </Form.Group>
-                  {bidError && <Alert variant="danger">{bidError}</Alert>}
-                  {bidSuccess && <Alert variant="success">{bidSuccess}</Alert>}
-                  <Button type="submit" variant="success" className="w-100">
-                    Place Bid
-                  </Button>
-                </Form>
+          <div className="bid-panel p-4 mb-4">
+            <div className="spec-label mb-1">Current price</div>
+            <div className="d-flex align-items-baseline gap-2 flex-wrap mb-1">
+              <span className="price-amount fs-2">
+                {car.current_price.toLocaleString()} JOD
+              </span>
+              {usdRate && (
+                <span className="price-usd">
+                  ≈ ${Math.round(car.current_price * usdRate).toLocaleString()} USD
+                </span>
               )}
-            </Card.Body>
-          </Card>
+            </div>
+            <div className="text-secondary small mb-3">
+              Starting price {car.starting_price.toLocaleString()} JOD · listed by {car.seller}
+            </div>
+            <hr className="my-3" />
+            <div className="spec-label mb-2">Time left</div>
+            {car.status === "active" ? (
+              <Countdown endTime={car.end_time} onExpire={fetchCar} />
+            ) : (
+              <Badge bg="secondary">Auction {car.status}</Badge>
+            )}
+
+            <hr className="my-3" />
+
+            {/* bid form */}
+            {car.status !== "active" ? (
+              <Alert variant="warning" className="mb-0">
+                This auction has {car.status}. Bidding is closed.
+              </Alert>
+            ) : isOwner ? (
+              <Alert variant="info" className="mb-0">
+                You cannot bid on your own listing.
+              </Alert>
+            ) : !user ? (
+              <Alert variant="info" className="mb-0">
+                <Link to="/login">Log in</Link> to place a bid.
+              </Alert>
+            ) : (
+              <Form onSubmit={handleBid}>
+                <Form.Group className="mb-2">
+                  <Form.Label>Your bid (minimum {minBid.toLocaleString()} JOD)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    placeholder={`e.g. ${minBid.toLocaleString()}`}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </Form.Group>
+                {bidError && <Alert variant="danger">{bidError}</Alert>}
+                {bidSuccess && <Alert variant="success">{bidSuccess}</Alert>}
+                <Button type="submit" variant="primary" className="w-100">
+                  Place Bid
+                </Button>
+              </Form>
+            )}
+          </div>
+          {usdRate && (
+            <p className="text-center text-secondary small">
+              Exchange rate provided by open.er-api.com
+            </p>
+          )}
         </Col>
       </Row>
 
-      {/* vehicle specifications */}
-      <Card className="shadow-sm mt-4 mb-4">
-        <Card.Body>
-          <Card.Title>Vehicle Specifications</Card.Title>
-          <Row className="mt-2">
-            <Col xs={6} md={3}><strong>Make:</strong> {car.make}</Col>
-            <Col xs={6} md={3}><strong>Model:</strong> {car.model}</Col>
-            <Col xs={6} md={3}><strong>Year:</strong> {car.year}</Col>
-            <Col xs={6} md={3}><strong>Mileage:</strong> {car.mileage.toLocaleString()} km</Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
       {/* immutable chronological bid history */}
+      <div className="section-title">Bid History ({bids.length})</div>
       <Card className="shadow-sm mb-5">
         <Card.Body>
-          <Card.Title>Bid History ({bids.length})</Card.Title>
           {bids.length === 0 ? (
-            <p className="text-muted mb-0">No bids yet — be the first!</p>
+            <p className="text-secondary mb-0">No bids yet — be the first!</p>
           ) : (
             <Table striped hover responsive className="mb-0">
               <thead>
