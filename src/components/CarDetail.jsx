@@ -26,6 +26,7 @@ const CarDetail = ({ user }) => {
       setData(res.data);
       setError("");
     } catch (err) {
+      console.error(err);
       setError("Could not load this auction.");
     }
   };
@@ -45,11 +46,6 @@ const CarDetail = ({ user }) => {
 
   const { car, bids, winner } = data;
   const isOwner = user && car.user_id === user.id;
-  const canBid =
-    user &&
-    user.role === "normal" &&
-    !isOwner &&
-    car.status === "active";
   const minBid = car.current_price + MIN_BID_INCREMENT;
 
   const handleBid = async (e) => {
