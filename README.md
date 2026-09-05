@@ -1,6 +1,6 @@
-# 🚗 CarBid — Frontend
+# MazadJo — Frontend
 
-React frontend for **CarBid**, an online car auction platform. Built with **Vite + React + React-Bootstrap** for the *Special Topics in Computer Science 1* full-stack assignment.
+React frontend for **MazadJo**, an online car auction platform. Built with **Vite + React + React-Bootstrap** for the *Special Topics in Computer Science 1* full-stack assignment.
 
 > Backend repository: [car-auction-backend](https://github.com/Cam3L1/car-auction-backend)
 
