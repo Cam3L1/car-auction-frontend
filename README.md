@@ -14,7 +14,7 @@ React frontend for **CarBid**, an online car auction platform. Built with **Vite
 - **Create listings** — image URL, starting price and auction duration (end timestamp computed client-side)
 - **Profile dashboard** — seller view (my listings) + bidder view (cars I bid on, am I winning / did I win)
 - **Admin dashboard** — platform monitoring, bidding log, cancel/delete listings, delete bids (price reverts)
-- **Third-party API integrations** — NHTSA vPIC (open car-data API) suggests real models while typing a make in the listing form; open.er-api.com exchange rates show USD equivalents next to every price
+- **Third-party API integration** — open.er-api.com exchange rates show USD equivalents next to every price
 - **Route protection** — `/create-listing`, `/profile` require a logged-in user; `/admin/dashboard` requires the admin role
 
 ## 🛠 Tech Stack
@@ -27,7 +27,6 @@ React frontend for **CarBid**, an online car auction platform. Built with **Vite
 | React-Bootstrap  | UI components (Navbar, Cards, Tables, Forms, Alerts, Badges) |
 | Bootstrap 5      | Responsive grid + styling                |
 | Axios            | HTTP requests with JWT headers           |
-| NHTSA vPIC API   | Open third-party API: real car models by make (no key) |
 | open.er-api.com  | Open third-party API: JOD → USD exchange rates (no key) |
 
 ## 🚀 Setup
@@ -88,12 +87,11 @@ src/
 
 **State management:** plain React hooks (`useState`/`useEffect`) with deliberate **props and prop drilling** — state lives in `App` and flows down to components as props, event handlers are passed down as callbacks. Data is fetched with Axios using `async/await`; the JWT is read from `localStorage` and attached to protected requests.
 
-**Third-party APIs (addition to our own REST API):**
+**Third-party API (addition to our own REST API):**
 
-| Integration      | Where                          | How it works |
-| ---------------- | ------------------------------ | ------------ |
-| NHTSA vPIC       | `CreateListing.jsx`            | Debounced request (600 ms after typing pauses) to `vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMake/{make}`; the unique model names populate a `<datalist>` on the model field, with graceful fallback to manual entry |
-| open.er-api.com  | `Home.jsx`, `CarDetail.jsx`    | One request to `/v6/latest/JOD` per page; the USD rate is passed to `CarCard` through props and shown as "≈ $X" next to every JOD price. If the API is unreachable the app simply shows JOD only |
+| Integration     | Where                       | How it works |
+| --------------- | --------------------------- | ------------ |
+| open.er-api.com | `Home.jsx`, `CarDetail.jsx` | One request to `/v6/latest/JOD` per page; the USD rate is passed to `CarCard` through props and shown as "≈ $X" next to every JOD price. If the API is unreachable the app simply shows JOD only |
 
 ## 📸 Screenshots
 
