@@ -10,6 +10,13 @@ const Profile = ({ user }) => {
   const [data, setData] = useState(null); // { user, sellerCars, bidderCars }
   const [error, setError] = useState("");
 
+  // lifecycle: this page mounts when its route is visited and
+  // unmounts when the user navigates away (React Router)
+  useEffect(() => {
+    console.log("🟢 Profile page mounted");
+    return () => console.log("🔴 Profile page unmounted");
+  }, []);
+
   const fetchProfile = async () => {
     try {
       const res = await api.get("/users/profile", { headers: authHeaders() });

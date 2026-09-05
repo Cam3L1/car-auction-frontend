@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import api from "../api";
@@ -10,6 +10,13 @@ const Register = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+
+  // lifecycle: this page mounts when its route is visited and
+  // unmounts when the user navigates away (React Router)
+  useEffect(() => {
+    console.log("🟢 Register page mounted");
+    return () => console.log("🔴 Register page unmounted");
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
