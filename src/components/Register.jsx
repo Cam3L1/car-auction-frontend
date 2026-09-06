@@ -3,6 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import api from "../api";
 
+// The registration page (/register) - public.
+//
+// Flow trace:
+//   user types -> controlled state -> submit ->
+//   inline validation (required fields, min password length, passwords
+//   must match) -> POST /auth/register ->
+//   success: onLogin saves the token + user (auto-login) and we go home
+//   failure: the API's message shows in an alert (e.g. duplicate email)
 const Register = ({ onLogin }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -38,7 +46,9 @@ const Register = ({ onLogin }) => {
 
     try {
       const res = await api.post("/auth/register", { username, email, password });
-      onLogin(res.data.token, res.data.user); // auto-login after registering
+      // the backend issues a token immediately, so registering also
+      // logs the user in
+      onLogin(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Try again.");
@@ -52,56 +62,56 @@ const Register = ({ onLogin }) => {
           <h1 className="fw-bold mb-1">Join MazadJo</h1>
           <p className="text-secondary mb-0">Create an account to bid and sell.</p>
         </div>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Username</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="e.g. jordan_driver"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="At least 6 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Confirm Password</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Repeat your password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Button type="submit" variant="primary" className="w-100 btn-gradient">
-              Register
-            </Button>
-          </Form>
-          <p className="text-center mt-3 mb-0">
-            Already have an account? <Link to="/login">Login</Link>
-          </p>
-        </div>
+        {error && <Alert variant="danger">{error}</Alert>}
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Label>Username</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="e.g. jordan_driver"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Confirm Password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Repeat your password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Button type="submit" variant="primary" className="w-100 btn-gradient">
+            Register
+          </Button>
+        </Form>
+        <p className="text-center mt-3 mb-0">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
     </Container>
   );
 };

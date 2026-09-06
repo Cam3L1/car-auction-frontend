@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Container, Card, Form, Row, Col, Button, Alert } from "react-bootstrap";
 import api, { authHeaders } from "../api";
 
+// The "Sell a Car" page (/create-listing) - protected: only reachable
+// when a normal user is logged in (see the guard in App.jsx).
+//
+// One state object holds the WHOLE form (formData) - a controlled form:
+// every input's value comes from state and every keystroke updates it.
 const CreateListing = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -25,40 +30,51 @@ const CreateListing = () => {
     return () => console.log("🔴 CreateListing page unmounted");
   }, []);
 
-  // generic controlled-input handler
+  // generic controlled-input handler: each input has a name attribute
+  // and this ONE function updates that key inside formData
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // submit flow:
+  //   1. inline validation (fast feedback, same rules as the backend)
+  //   2. calculate end_time from the chosen duration in hours
+  //   3. POST /cars with the JWT header
+  //   4. success -> navigate to the new car's detail page
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     const { title, make, model, year, mileage, description, image_url, starting_price, duration_hours } = formData;
 
-    // inline validation
+    // validation 1: all fields required
     if (!title || !make || !model || !year || !mileage || !description || !image_url || !starting_price) {
       setError("All fields are required.");
       return;
     }
+    // validation 2: year must be realistic
     if (Number(year) < 1950 || Number(year) > new Date().getFullYear() + 1) {
       setError(`Year must be between 1950 and ${new Date().getFullYear() + 1}.`);
       return;
     }
+    // validation 3: mileage cannot be negative
     if (Number(mileage) < 0) {
       setError("Mileage cannot be negative.");
       return;
     }
+    // validation 4: price must be positive
     if (Number(starting_price) <= 0) {
       setError("Starting price must be greater than 0.");
       return;
     }
+    // validation 5: duration between 1 hour and 30 days
     if (Number(duration_hours) < 1 || Number(duration_hours) > 720) {
       setError("Auction duration must be between 1 hour and 30 days.");
       return;
     }
 
-    // the countdown end timestamp is calculated from the chosen duration
+    // the countdown end timestamp = now + the chosen duration.
+    // The BACKEND stores it and is the source of truth for the timer.
     const end_time = new Date(Date.now() + Number(duration_hours) * 60 * 60 * 1000).toISOString();
 
     try {
@@ -74,7 +90,7 @@ const CreateListing = () => {
         },
         { headers: authHeaders() }
       );
-      navigate(`/cars/${res.data.car.id}`);
+      navigate(`/cars/${res.data.car.id}`); // straight to the new listing
     } catch (err) {
       setError(err.response?.data?.message || "Could not create the listing.");
     }

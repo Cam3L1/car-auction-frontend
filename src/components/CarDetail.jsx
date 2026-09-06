@@ -8,13 +8,23 @@ import axios from "axios";
 import api, { authHeaders } from "../api";
 import Countdown from "./Countdown";
 
+// minimum amount a new bid must add on top of the current price (JOD) -
+// mirrors the MIN_BID_INCREMENT on the backend (the server re-checks
+// everything anyway; this only improves the client-side feedback)
 const MIN_BID_INCREMENT = 100;
 
 // status badge colours (always paired with the status text itself)
 const statusVariant = { active: "success", ended: "secondary", cancelled: "danger" };
 
+// The car detail page ("/cars/:id") - public for viewing.
+//
+// Data flow trace:
+//   mount -> fetchCar() -> GET /api/cars/:id -> setData ->
+//        -> renders image, spec grid, bid panel and bid history
+//   countdown reaches zero -> Countdown calls onExpire -> fetchCar()
+//        again -> the refreshed car now shows status "Ended" + winner
 const CarDetail = ({ user }) => {
-  const { id } = useParams();
+  const { id } = useParams(); // the :id part of the URL
   const [data, setData] = useState(null); // { car, bids, winner }
   const [error, setError] = useState("");
   const [amount, setAmount] = useState("");
@@ -29,7 +39,8 @@ const CarDetail = ({ user }) => {
     return () => console.log("🔴 CarDetail page unmounted");
   }, []);
 
-  // third-party API: JOD -> USD exchange rate (open.er-api.com)
+  // third-party API: JOD -> USD exchange rate (open.er-api.com, no key).
+  // Fetched once on mount; if it fails, the page just shows JOD only.
   useEffect(() => {
     axios
       .get("https://open.er-api.com/v6/latest/JOD")
@@ -37,6 +48,7 @@ const CarDetail = ({ user }) => {
       .catch(() => setUsdRate(null));
   }, []);
 
+  // fetch the car + its bid history from the API
   const fetchCar = async () => {
     try {
       const res = await api.get(`/cars/${id}`);
@@ -48,10 +60,13 @@ const CarDetail = ({ user }) => {
     }
   };
 
+  // runs on mount AND whenever the :id in the URL changes
   useEffect(() => {
     fetchCar();
   }, [id]);
 
+  // loading and error states come FIRST - hooks must always run, but
+  // the render below needs `data`
   if (error) return <Container><Alert variant="danger">{error}</Alert></Container>;
   if (!data) {
     return (
@@ -65,6 +80,11 @@ const CarDetail = ({ user }) => {
   const isOwner = user && car.user_id === user.id;
   const minBid = car.current_price + MIN_BID_INCREMENT;
 
+  // placing a bid - steps:
+  //   1. inline validation (same rules as the backend, for fast feedback)
+  //   2. POST /cars/:id/bids with the JWT header
+  //   3. success -> show the success alert and refetch (price updates)
+  //      failure -> show the server's message (e.g. "auction ended")
   const handleBid = async (e) => {
     e.preventDefault();
     setBidError("");
@@ -104,6 +124,7 @@ const CarDetail = ({ user }) => {
               src={car.image_url}
               alt={car.title}
               className="detail-img"
+              // broken URL -> swap to the local placeholder image
               onError={(e) => (e.target.src = "/images/placeholder-car.svg")}
             />
             <Badge bg={statusVariant[car.status]} className="status-badge fs-6">
@@ -122,7 +143,7 @@ const CarDetail = ({ user }) => {
             </Card.Body>
           </Card>
 
-          {/* vehicle specifications */}
+          {/* vehicle specifications: four label/value pairs */}
           <div className="spec-grid">
             <Row>
               <Col xs={6} md={3} className="spec-item">
@@ -165,6 +186,7 @@ const CarDetail = ({ user }) => {
             <hr className="my-3" />
             <div className="spec-label mb-2">Time left</div>
             {car.status === "active" ? (
+              /* onExpire refetches the car so the UI flips to Ended */
               <Countdown endTime={car.end_time} onExpire={fetchCar} />
             ) : (
               <Badge bg="secondary">Auction {car.status}</Badge>
@@ -172,7 +194,8 @@ const CarDetail = ({ user }) => {
 
             <hr className="my-3" />
 
-            {/* bid form */}
+            {/* the bid area has 4 possible states (conditional rendering):
+                closed auction / own listing / logged out / bid form */}
             {car.status !== "active" ? (
               <Alert variant="warning" className="mb-0">
                 This auction has {car.status}. Bidding is closed.
@@ -212,7 +235,7 @@ const CarDetail = ({ user }) => {
         </Col>
       </Row>
 
-      {/* immutable chronological bid history */}
+      {/* immutable chronological bid history (newest first for reading) */}
       <div className="section-title">Bid History ({bids.length})</div>
       <Card className="shadow-sm mb-5">
         <Card.Body>
@@ -229,6 +252,8 @@ const CarDetail = ({ user }) => {
                 </tr>
               </thead>
               <tbody>
+                {/* reverse() so the newest bid is row 1; index === 0 is
+                    therefore the leading bidder / winner */}
                 {[...bids].reverse().map((bid, index) => (
                   <tr key={bid.id}>
                     <td>{bids.length - index}</td>

@@ -3,8 +3,18 @@ import { Link } from "react-router-dom";
 import { Container, Card, Table, Badge, Button, Alert, Spinner, Tabs, Tab } from "react-bootstrap";
 import api, { authHeaders } from "../api";
 
+// status -> badge colour (the status text is always shown next to it)
 const statusVariant = { active: "success", ended: "secondary", cancelled: "danger" };
 
+// The admin dashboard (/admin/dashboard) - admin only (AdminRoute guard
+// in App.jsx, plus the backend double-checks every request).
+//
+// Data flow trace:
+//   mount -> fetchData() -> TWO parallel API calls:
+//      GET /admin/cars  -> all auctions (monitoring)
+//      GET /admin/bids  -> platform-wide bidding log
+//   every moderation action -> one admin API call -> fetchData() again
+//   so the tables always show the fresh state
 const AdminDashboard = () => {
   const [cars, setCars] = useState([]);
   const [bids, setBids] = useState([]);
@@ -21,7 +31,8 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      // platform monitoring: all auctions + the full bidding log
+      // Promise.all: both requests run at the same time and we wait
+      // for both to finish before updating the tables
       const [carsRes, bidsRes] = await Promise.all([
         api.get("/admin/cars", { headers: authHeaders() }),
         api.get("/admin/bids", { headers: authHeaders() }),
@@ -41,7 +52,8 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // moderation: delete a fraudulent bid (price reverts server-side)
+  // moderation: delete a fraudulent bid. The backend removes it AND
+  // reverts the car's price to the previous highest bid automatically.
   const handleDeleteBid = async (bid) => {
     if (!window.confirm(`Delete bid #${bid.id} (${bid.amount.toLocaleString()} JOD by ${bid.bidder})?`)) return;
     try {
@@ -53,7 +65,8 @@ const AdminDashboard = () => {
     }
   };
 
-  // moderation: cancel a non-compliant listing (bids are voided)
+  // moderation: cancel a non-compliant listing. The backend voids all
+  // its bids and resets the price to the starting price.
   const handleCancelCar = async (car) => {
     if (!window.confirm(`Cancel the listing "${car.title}"? All its bids will be voided.`)) return;
     try {
@@ -65,7 +78,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // moderation: remove a listing entirely
+  // moderation: remove a listing entirely (its bids cascade-delete).
   const handleDeleteCar = async (car) => {
     if (!window.confirm(`Permanently delete the listing "${car.title}"?`)) return;
     try {
@@ -87,6 +100,7 @@ const AdminDashboard = () => {
 
   if (error) return <Container><Alert variant="danger">{error}</Alert></Container>;
 
+  // counts for the stat tiles at the top
   const activeCount = cars.filter((c) => c.status === "active").length;
   const endedCount = cars.filter((c) => c.status === "ended").length;
   const cancelledCount = cars.filter((c) => c.status === "cancelled").length;
@@ -97,6 +111,7 @@ const AdminDashboard = () => {
       <p className="text-secondary">Platform monitoring and moderation</p>
       {notice && <Alert variant="success">{notice}</Alert>}
 
+      {/* stat tiles: active / ended / cancelled / total bids */}
       <div className="stat-row">
         <div className="stat-tile">
           <div className="stat-label">Active auctions</div>
@@ -116,6 +131,8 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* two tabs: switching tabs mounts/unmounts the panels inside the
+          SAME url - a conditional-rendering example of the lifecycle */}
       <Tabs defaultActiveKey="auctions" className="mb-3">
         {/* ALL AUCTIONS (active + closed) */}
         <Tab eventKey="auctions" title={`All Auctions (${cars.length})`}>
