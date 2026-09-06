@@ -2,18 +2,28 @@ import { Card, Button, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Countdown from "./Countdown";
 
+// status -> Bootstrap badge colour (the status is ALSO printed as text,
+// so colour is never the only signal)
 const statusVariant = { active: "success", ended: "secondary", cancelled: "danger" };
 
+// One auction card inside the home grid. Rendered for every car in the
+// list with cars.map() - `car` is that row, `usdRate` is the exchange
+// rate fetched once by Home and passed down through props.
+//
+// Interactions: the View Details button calls navigate("/cars/:id") -
+// React Router then mounts the CarDetail page for that car.
 const CarCard = ({ car, usdRate }) => {
   const navigate = useNavigate();
 
   return (
     <Card className="car-card h-100">
       <div className="card-img-wrap">
+        {/* photo with two overlays: status badge + live countdown */}
         <Card.Img
           variant="top"
           src={car.image_url}
           alt={car.title}
+          // if the image URL is broken, swap to the local placeholder
           onError={(e) => (e.target.src = "/images/placeholder-car.svg")}
         />
         <Badge bg={statusVariant[car.status]} className="status-badge">
@@ -30,6 +40,8 @@ const CarCard = ({ car, usdRate }) => {
         <div className="text-secondary mb-2 small">
           {car.make} {car.model} · {car.year} · {car.mileage.toLocaleString()} km
         </div>
+
+        {/* price in JOD + the USD equivalent from the third-party API */}
         <div className="price-line mb-1">
           <span className="price-amount">{car.current_price.toLocaleString()} JOD</span>
           {usdRate && (
@@ -41,6 +53,8 @@ const CarCard = ({ car, usdRate }) => {
         <div className="text-secondary small mb-3">
           {car.bid_count} bid{car.bid_count === 1 ? "" : "s"} · by {car.seller}
         </div>
+
+        {/* mt-auto pushes the button to the bottom so all cards align */}
         <Button
           variant="primary"
           className="mt-auto w-100"

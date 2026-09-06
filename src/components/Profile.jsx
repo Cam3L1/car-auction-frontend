@@ -4,8 +4,15 @@ import { Container, Card, Table, Badge, Alert, Spinner, Row, Col } from "react-b
 import api, { authHeaders } from "../api";
 import Countdown from "./Countdown";
 
+// status -> badge colour (the status text is always shown next to it)
 const statusVariant = { active: "success", ended: "secondary", cancelled: "danger" };
 
+// The profile page (/profile) - protected (normal user).
+// It renders BOTH sides of the dashboard from ONE API call:
+//
+//   mount -> GET /users/profile (JWT header) -> setData
+//     -> left card:  sellerCars  (My Listings)
+//     -> right card: bidderCars  (My Bids)
 const Profile = ({ user }) => {
   const [data, setData] = useState(null); // { user, sellerCars, bidderCars }
   const [error, setError] = useState("");
@@ -17,6 +24,8 @@ const Profile = ({ user }) => {
     return () => console.log("🔴 Profile page unmounted");
   }, []);
 
+  // the backend identifies the user from the JWT (authHeaders) -
+  // the user id is never sent from here
   const fetchProfile = async () => {
     try {
       const res = await api.get("/users/profile", { headers: authHeaders() });
@@ -80,6 +89,8 @@ const Profile = ({ user }) => {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* one row per listing; active rows get a live
+                        countdown that refetches the profile on expiry */}
                     {sellerCars.map((car) => (
                       <tr key={car.id}>
                         <td>
@@ -132,6 +143,11 @@ const Profile = ({ user }) => {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* the backend sends top_bidder_id: compare it with
+                        the logged-in user's id to decide the badge:
+                          ended + I lead  -> "You won!"
+                          active + I lead -> "Highest bidder"
+                          active + I lag  -> "Outbid" */}
                     {bidderCars.map((car) => {
                       const iAmLeading = car.top_bidder_id === user.id;
                       const iWon = car.status === "ended" && iAmLeading;

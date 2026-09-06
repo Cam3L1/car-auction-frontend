@@ -1,12 +1,22 @@
 import { Link } from "react-router-dom";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 
+// The top navigation bar, shown on EVERY page (it lives in App, outside
+// the <Routes>).
+//
+// It receives the logged-in user and the logout handler through props
+// and renders DIFFERENT links depending on the role (conditional
+// rendering):
+//   - logged out      -> Login / Register
+//   - normal user     -> Auctions / Sell a Car / My Profile + Logout
+//   - admin           -> Auctions / Admin Dashboard + Logout
 const NavBar = ({ user, onLogout }) => {
   const isAdmin = user?.role === "admin";
 
   return (
     <Navbar expand="lg" className="navbar-car sticky-top mb-4">
       <Container>
+        {/* brand links back to the home page */}
         <Navbar.Brand as={Link} to="/">
           <span className="brand-accent">MazadJo</span>
         </Navbar.Brand>
