@@ -4,8 +4,11 @@ import axios from "axios";
 // It is pre-configured with the backend base URL, so components only
 // write the path:
 //
-//   api.get("/cars")   ->  GET http://localhost:5001/api/cars
-const API_URL = "http://localhost:5001/api";
+//   api.get("/cars")   ->  GET <API_URL>/cars
+//
+// In development the fallback points at the local backend.
+// In production Vite injects VITE_API_URL at BUILD time (Railway env var).
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 const api = axios.create({
   baseURL: API_URL,
