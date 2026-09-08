@@ -3,14 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import api from "../api";
 
-// The registration page (/register) - public.
-//
-// Flow trace:
-//   user types -> controlled state -> submit ->
-//   inline validation (required fields, min password length, passwords
-//   must match) -> POST /auth/register ->
-//   success: onLogin saves the token + user (auto-login) and we go home
-//   failure: the API's message shows in an alert (e.g. duplicate email)
 const Register = ({ onLogin }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -19,8 +11,6 @@ const Register = ({ onLogin }) => {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
 
-  // lifecycle: this page mounts when its route is visited and
-  // unmounts when the user navigates away (React Router)
   useEffect(() => {
     console.log("🟢 Register page mounted");
     return () => console.log("🔴 Register page unmounted");
@@ -30,7 +20,6 @@ const Register = ({ onLogin }) => {
     e.preventDefault();
     setError("");
 
-    // inline validation before calling the API
     if (!username || !email || !password) {
       setError("All fields are required.");
       return;
@@ -46,8 +35,6 @@ const Register = ({ onLogin }) => {
 
     try {
       const res = await api.post("/auth/register", { username, email, password });
-      // the backend issues a token immediately, so registering also
-      // logs the user in
       onLogin(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
