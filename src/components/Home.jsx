@@ -4,42 +4,28 @@ import axios from "axios";
 import api from "../api";
 import CarCard from "./CarCard";
 
-// The home page ("/") - public. Shows the hero, the search/filter bar
-// and the grid of active auction cards.
-//
-// Data flow trace:
-//   mount -> fetchCars() -> GET /api/cars -> setCars -> re-render grid
-//   changing the make dropdown -> useEffect [make] -> fetch again
-//   search submit / clear -> fetchCars() with the right params
 const Home = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [make, setMake] = useState("");
-  const [usdRate, setUsdRate] = useState(null); // JOD -> USD (third-party API)
+  const [usdRate, setUsdRate] = useState(null);
 
-  // lifecycle: this page mounts when its route is visited and
-  // unmounts when the user navigates away (React Router)
+  // lifecycle logs: watch the console while navigating
   useEffect(() => {
     console.log("🟢 Home page mounted");
     return () => console.log("🔴 Home page unmounted");
   }, []);
 
-  // third-party API: open exchange rates (open.er-api.com, no key needed).
-  // Fetched ONCE when the page mounts, so every card can show the USD
-  // equivalent of the price without re-fetching per card.
+  // third-party API: JOD -> USD exchange rate
   useEffect(() => {
     axios
       .get("https://open.er-api.com/v6/latest/JOD")
       .then((res) => setUsdRate(res.data?.rates?.USD || null))
-      .catch(() => setUsdRate(null)); // graceful fallback: show JOD only
+      .catch(() => setUsdRate(null));
   }, []);
 
-  // fetch the active auctions. q/m are optional overrides used by the
-  // clear-filters handler (state updates are async, so reading the
-  // state right after setSearch("") would still give the OLD value -
-  // that is why the values are passed as arguments instead).
   const fetchCars = async (q = search, m = make) => {
     setLoading(true);
     setError("");
@@ -57,33 +43,27 @@ const Home = () => {
     }
   };
 
-  // fetch the active auctions whenever the make filter changes
   useEffect(() => {
     fetchCars();
   }, [make]);
 
-  // the make dropdown is built from the currently loaded cars
   const makes = [...new Set(cars.map((car) => car.make))].sort();
 
-  // search submits the form -> refetch with the search text
   const handleSearch = (e) => {
     e.preventDefault();
     fetchCars();
   };
 
-  // reset both filters and refetch everything
   const handleClear = () => {
     setSearch("");
     setMake("");
-    fetchCars("", ""); // pass empty values so the stale state is not used
+    fetchCars("", "");
   };
 
-  // stat chips: total bids = sum of every card's bid_count
   const totalBids = cars.reduce((sum, car) => sum + car.bid_count, 0);
 
   return (
     <>
-      {/* hero */}
       <div className="hero">
         <Container>
           <h1 className="hero-title">
@@ -107,7 +87,6 @@ const Home = () => {
             )}
           </div>
 
-          {/* search + make filter */}
           <Form onSubmit={handleSearch}>
             <Row className="g-2">
               <Col xs={12} md={6}>
@@ -143,7 +122,6 @@ const Home = () => {
       </div>
 
       <Container className="pb-5">
-        {/* three render states: error / loading / the grid */}
         {error && <Alert variant="danger">{error}</Alert>}
         {loading && (
           <div className="text-center my-5">
@@ -155,11 +133,9 @@ const Home = () => {
           <Alert variant="info">No active auctions found.</Alert>
         )}
 
-        {/* render the listing cards by mapping over the cars array */}
         <Row xs={1} sm={2} lg={3} className="g-4">
           {cars.map((car) => (
             <Col key={car.id}>
-              {/* usdRate is passed down here - prop drilling */}
               <CarCard car={car} usdRate={usdRate} />
             </Col>
           ))}

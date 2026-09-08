@@ -3,22 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import api from "../api";
 
-// The login page (/login) - public.
-//
-// Flow trace:
-//   user types -> controlled state -> submit ->
-//   inline validation -> POST /auth/login ->
-//   success: onLogin(token, user) saves them in localStorage
-//            (see App.jsx) and navigate("/") goes home
-//   failure: the API's message shows in an alert
 const Login = ({ onLogin }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // lifecycle: this page mounts when its route is visited and
-  // unmounts when the user navigates away (React Router)
   useEffect(() => {
     console.log("🟢 Login page mounted");
     return () => console.log("🔴 Login page unmounted");
@@ -28,7 +18,6 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     setError("");
 
-    // inline validation before calling the API
     if (!email || !password) {
       setError("Email and password are required.");
       return;
@@ -36,12 +25,9 @@ const Login = ({ onLogin }) => {
 
     try {
       const res = await api.post("/auth/login", { email, password });
-      // hand the token + user up to App: it saves them to localStorage
-      // and updates the navbar
       onLogin(res.data.token, res.data.user);
       navigate("/");
     } catch (err) {
-      // the backend's own message, e.g. "Invalid credentials"
       setError(err.response?.data?.message || "Login failed. Try again.");
     }
   };
